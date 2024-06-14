@@ -3,3 +3,4 @@
 *.tar.gz
 *.whl
 .coverage
+*.sqlite3
