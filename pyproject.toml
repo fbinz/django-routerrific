@@ -1,0 +1,64 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "django-routerrific"
+authors = [{name = "Fabian Binz", email = "fabian.binz@gmail.com"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version", "description"]
+readme = "README.md"
+
+[project.urls]
+Home = "https://github.com/fbinz/django-routerrific"
+
+[tool.flit.module]
+name = "django_routerrific"
+
+dependencies = [
+  "msgspec",
+  "django",
+  "more-itertools",
+]
+
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "uv",
+  "flit",
+  "pytest",
+  "pytest-cov",
+  "pytest-django",
+  "coverage",
+]
+
+[tool.ruff]
+line-length = 120
+lint.unfixable = [
+  # don't autofix unused variables and imports, since they
+  # appear frequently during development
+  "F401",
+  "F841",
+]
+exclude = ["**migrations**"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "example.settings"
+addopts = "--cov=django_routerrific --cov-report html"
+filterwarnings = [
+  "ignore:::django:0",         # ignore all warnings that come from django
+]
+testpaths = [
+  "django_routerrific",
+]
+
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+]

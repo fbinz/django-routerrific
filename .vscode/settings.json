@@ -1,0 +1,8 @@
+{
+  "python.testing.pytestArgs": [
+    "django_routerrific"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.experiments.enabled": true
+}
