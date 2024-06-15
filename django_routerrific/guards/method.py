@@ -11,8 +11,11 @@ class MethodGuard:
     method: str
 
 
-@router.from_request.register
-def _(guard: MethodGuard, request: HttpRequest, context: router.RouteContext) -> Any:
+def from_request(
+    guard: MethodGuard,
+    request: HttpRequest,
+    context: router.RouteContext,
+) -> Any:
     if request.method.lower() == guard.method.lower():
         return
 

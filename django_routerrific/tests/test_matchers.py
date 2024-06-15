@@ -2,7 +2,7 @@ import datetime
 import json
 import uuid
 from dataclasses import dataclass
-from typing import Annotated
+from typing import Annotated, Type
 
 import msgspec
 import pytest
@@ -11,11 +11,8 @@ from django.http import HttpRequest
 from django_routerrific import Router, route
 from django_routerrific.expr import X
 from django_routerrific.guards import Header
-from django_routerrific.router import (
-    RouteConfigurationException,
-    RouteContext,
-    from_request,
-)
+from django_routerrific.guards.parameter import ParameterGuard
+from django_routerrific.router import RouteConfigurationException, RouteContext
 
 
 def test_match_path(rf):
@@ -71,6 +68,8 @@ def test_parameter_name_mismatch():
         @route("get", r"/blog/(?P<post_id>\d+)")
         def view_func(id): ...
 
+        Router(views=[view_func])
+
     assert "Path parameter named 'post_id' not found in view function" in str(e)
 
 
@@ -105,6 +104,8 @@ def test_unsupported_parameter_type(rf):
 
         @route("get", r"/blog/(?P<id>\d+)")
         def blog_detail(id: UnsupportedType): ...
+
+        Router(views=[blog_detail])
 
     assert "Unsupported type 'UnsupportedType'" in str(e)
 
@@ -189,7 +190,10 @@ def test_body_parameter_regular(rf):
     @route("post", r"/blog/")
     def view_func(x: Input): ...
 
-    router = Router(views=[view_func])
+    router = Router(
+        views=[view_func],
+        integrations=["msgspec"],
+    )
 
     request = rf.post(
         "/blog/",
@@ -208,7 +212,10 @@ def test_body_parameter_parse_failure(rf):
     @route("post", r"/blog/")
     def view_func(x: Input): ...
 
-    router = Router(views=[view_func])
+    router = Router(
+        views=[view_func],
+        integrations=["msgspec"],
+    )
 
     request = rf.post(
         "/blog/",
@@ -229,7 +236,7 @@ def test_body_parameter_parse_multiple(rf):
     @route("post", r"/blog/")
     def view_func(x: InputA, y: InputB): ...
 
-    router = Router(views=[view_func])
+    router = Router(views=[view_func], integrations=["msgspec"])
 
     request = rf.post(
         "/blog/",
@@ -336,19 +343,17 @@ def test_multiple_constraints(rf, value, found):
 
 
 def test_custom_matcher(rf):
-
     @dataclass
     class User:
         id: str
 
-    @from_request.register
-    def _(guard: User, request: HttpRequest, context: RouteContext) -> User:
+    def user_guard(guard: User, request: HttpRequest, context: RouteContext) -> User:
         return User(id=request.headers["user"])
 
     @route("get", r"/blog/")
     def view_func(user: User): ...
 
-    router = Router(views=[view_func])
+    router = Router(views=[view_func], integrations=[user_guard])
 
     request = rf.get("/blog/", headers={"user": "user-id-123"})
 
@@ -356,3 +361,34 @@ def test_custom_matcher(rf):
     assert match is not None
     assert match.view is view_func
     assert match.args == {"user": User(id="user-id-123")}
+
+
+def test_matcher_integration_variance(rf):
+    class UserHeader(msgspec.Struct):
+        id: str
+
+    class UserBody(msgspec.Struct):
+        id: str
+
+    def user_guard(
+        guard: UserHeader, request: HttpRequest, context: RouteContext
+    ) -> UserHeader:
+        return UserHeader(id=request.headers["user"])
+
+    @route("post", r"/blog/")
+    def view_func(user_header: UserHeader, user_body: UserBody): ...
+
+    router = Router(views=[view_func], integrations=[user_guard, "msgspec"])
+
+    request = rf.post(
+        "/blog/",
+        headers={"user": "user-id-123"},
+        data=json.dumps({"id": "user-id-456"}),
+        content_type="application/json",
+    )
+
+    match = router.match(request)
+    assert match is not None
+    assert match.view is view_func
+    assert match.args["user_header"] == UserHeader(id="user-id-123")
+    assert match.args["user_body"] == UserBody(id="user-id-456")

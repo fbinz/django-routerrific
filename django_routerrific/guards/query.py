@@ -15,8 +15,11 @@ class QueryGuard(ParameterGuard):
         self.parser = router.build_serializer(self.cls)
 
 
-@router.from_request.register
-def _(guard: QueryGuard, request: HttpRequest, context: router.RouteContext) -> Any:
+def from_request(
+    guard: QueryGuard,
+    request: HttpRequest,
+    context: router.RouteContext,
+) -> Any:
     value = request.GET.get(guard.name)
     if value is None:
         raise router.MatchFailure(f"Query parameter {guard.name!r} not found")

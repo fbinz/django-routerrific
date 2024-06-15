@@ -13,8 +13,11 @@ class HeaderGuard(ParameterGuard):
         self.parser = router.build_serializer(self.cls)
 
 
-@router.from_request.register
-def _(guard: HeaderGuard, request: HttpRequest, context: router.RouteContext) -> Any:
+def from_request(
+    guard: HeaderGuard,
+    request: HttpRequest,
+    context: router.RouteContext,
+) -> Any:
     value = request.headers.get(guard.name.upper())
     if value is None:
         raise router.MatchFailure(f"Header {guard.name!r} not found")

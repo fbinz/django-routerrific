@@ -15,8 +15,11 @@ class PathGuard(ParameterGuard):
         self.parser = router.build_serializer(self.cls)
 
 
-@router.from_request.register
-def _(guard: PathGuard, request: HttpRequest, context: router.RouteContext) -> Any:
+def from_request(
+    guard: PathGuard,
+    request: HttpRequest,
+    context: router.RouteContext,
+) -> Any:
     path_parameters = context.match.groupdict()
 
     # try to parse the path parameters into the view's parameter types
