@@ -1,4 +1,7 @@
+import pytest
+
 from django_routerrific import Router, route
+from django_routerrific.router import RouteConfigurationException
 
 
 def test_empty_router(rf):
@@ -31,3 +34,12 @@ def test_dispatch_not_found(rf):
     router = Router(views=[blog_list])
     response = router.dispatch(rf.get("/blub/123"))
     assert response.status_code == 404
+
+
+def test_route_not_annotated(rf):
+    def blog_list(): ...
+
+    with pytest.raises(RouteConfigurationException) as e:
+        Router(views=[blog_list])
+
+    assert "View function must be annotated with @route" in str(e)

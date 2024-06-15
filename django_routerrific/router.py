@@ -4,6 +4,7 @@ import re
 import typing
 from dataclasses import dataclass
 from functools import reduce
+from types import NoneType
 from typing import Any, Callable, Iterable
 from uuid import UUID
 
@@ -26,10 +27,17 @@ class RouteConfigurationException(Exception):
     pass
 
 
+def parse_str(value):
+    if value is None:
+        raise ValueError
+    return str(value)
+
+
 DESERIALIZERS = {
     int: int,
-    str: str,
+    str: parse_str,
     UUID: UUID,
+    NoneType: lambda _: None,
 }
 
 DJANGO_PATTERNS = {
@@ -61,7 +69,7 @@ def path_parameter_names(path: str) -> list[str]:
     return list(pattern.groupindex.keys())
 
 
-def build_serializer(cls: type) -> Callable[[str], Any]:
+def build_parser(cls: type) -> Callable[[str], Any]:
     predicate = None
 
     if typing.get_origin(cls) is typing.Annotated:
@@ -76,19 +84,28 @@ def build_serializer(cls: type) -> Callable[[str], Any]:
         cls = cls
 
     try:
-        deserializer = DESERIALIZERS[cls]
+        if args := typing.get_args(cls):
+            deserializers = [DESERIALIZERS[arg] for arg in args]
+        else:
+            deserializers = [DESERIALIZERS[cls]]
     except KeyError:
         raise RouteConfigurationException(f"Unsupported type {cls.__name__!r}")
 
     def parse(value):
-        deserialized_value = deserializer(value)
-        if predicate is None:
-            return deserialized_value
+        for deserializer in deserializers:
+            try:
+                deserialized_value = deserializer(value)
+                if predicate is None:
+                    return deserialized_value
 
-        if not predicate(deserialized_value):
-            raise ValueError
+                if not predicate(deserialized_value):
+                    continue
 
-        return deserialized_value
+                return deserialized_value
+            except Exception:
+                continue
+
+        raise ValueError
 
     return parse
 
@@ -155,12 +172,13 @@ class Router:
         self.guard_registry[cls] = fn
 
     def view_guard(self, view: Callable[..., Any]) -> Iterable[ViewGuard]:
-        for method, path in getattr(view, "__routerrific__", []):
-            if method is None or path is None:
-                raise RouteConfigurationException(
-                    "View function must be annotated with @route"
-                )
+        routerrific = getattr(view, "__routerrific__", None)
+        if routerrific is None:
+            raise RouteConfigurationException(
+                "View function must be annotated with @route"
+            )
 
+        for method, path in routerrific:
             path_pattern = path_to_pattern(path)
             view_guard = ViewGuard(
                 guards=self.view_guards(view, method, path),

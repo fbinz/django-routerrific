@@ -12,7 +12,7 @@ from . import ParameterGuard
 class PathGuard(ParameterGuard):
     def __post_init__(self):
         super().__post_init__()
-        self.parser = router.build_serializer(self.cls)
+        self.parser = router.build_parser(self.cls)
 
 
 def from_request(
@@ -26,6 +26,8 @@ def from_request(
     try:
         value = path_parameters[guard.name]
         result = guard.parser(value)
+        if result is None and guard.parameter.default is not None:
+            return guard.parameter.default
         return result
     except Exception as e:
         raise router.MatchFailure("Failed to parse path parameter") from e

@@ -192,7 +192,7 @@ def test_body_parameter_regular(rf):
 
     router = Router(
         views=[view_func],
-        integrations=["msgspec"],
+        integrations=["django_routerrific.guards.integrations.msgspec.from_request"],
     )
 
     request = rf.post(
@@ -425,3 +425,76 @@ def test_integration_variance(rf):
     assert match.view is view_func
     assert match.args["user"] == User(id="user-id-123")
     assert match.args["item"] == Item(id="item-id-456")
+
+
+def test_optional_query_parameter(rf):
+    @route("get", r"/blog/")
+    def view_func(a: int | None = None): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/")
+    match = router.match(request)
+    assert match.view is view_func
+    assert match.args == {"a": None}
+
+
+def test_optional_query_parameter_with_default(rf):
+    @route("get", r"/blog/")
+    def view_func(a: int | None = 123): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/")
+    match = router.match(request)
+    assert match.view is view_func
+    assert match.args == {"a": 123}
+
+
+def test_optional_header_parameter(rf):
+    @route("get", r"/blog/")
+    def view_func(a: Annotated[int | None, Header] = None): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/")
+    match = router.match(request)
+    assert match.view is view_func
+
+
+def test_optional_header_parameter_with_default(rf):
+    @route("get", r"/blog/")
+    def view_func(a: Annotated[int | None, Header] = 123): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/")
+    match = router.match(request)
+    assert match.view is view_func
+    assert match.args == {"a": 123}
+
+
+def test_optional_path_parameter(rf):
+    @route("get", r"/((?P<lang>\d+)/)?blog/<int:id>/")
+    def view_func(id: int, lang: str | None = None): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/123/")
+    match = router.match(request)
+    assert match.view is view_func
+    assert match.args["id"] == 123
+    assert match.args["lang"] is None
+
+
+def test_optional_path_parameter_with_default(rf):
+    @route("get", r"/((?P<lang>\d+)/)?blog/<int:id>/")
+    def view_func(id: int, lang: str | None = "en"): ...
+
+    router = Router(views=[view_func])
+
+    request = rf.get("/blog/123/")
+    match = router.match(request)
+    assert match.view is view_func
+    assert match.args["id"] == 123
+    assert match.args["lang"] == "en"
