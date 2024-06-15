@@ -1,6 +1,6 @@
 from typing import TypeAlias
 
-from django_routerrific.guards.parameter import ParameterGuard
+from routerrific.guards.parameter import ParameterGuard
 
 from .header import HeaderGuard
 from .method import MethodGuard

@@ -14,7 +14,7 @@ readme = "README.md"
 Home = "https://github.com/fbinz/django-routerrific"
 
 [tool.flit.module]
-name = "django_routerrific"
+name = "routerrific"
 
 dependencies = [
   "msgspec",
@@ -49,12 +49,12 @@ exclude = ["**migrations**"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "example.settings"
-addopts = "--cov=django_routerrific --cov-report html"
+addopts = "--cov=routerrific --cov-report html"
 filterwarnings = [
   "ignore:::django:0",         # ignore all warnings that come from django
 ]
 testpaths = [
-  "django_routerrific",
+  "routerrific",
 ]
 
 

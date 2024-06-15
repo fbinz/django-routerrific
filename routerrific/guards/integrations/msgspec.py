@@ -3,8 +3,8 @@ from typing import Any
 import msgspec
 from django.http import HttpRequest
 
-from django_routerrific import router
-from django_routerrific.guards.parameter import ParameterGuard
+from routerrific import router
+from routerrific.guards.parameter import ParameterGuard
 
 
 def from_request(

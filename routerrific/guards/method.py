@@ -3,7 +3,7 @@ from typing import Any
 
 from django.http import HttpRequest
 
-from django_routerrific import router
+from routerrific import router
 
 
 @dataclass

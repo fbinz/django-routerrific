@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 
 import pytest
 
-from django_routerrific.expr import Var, X, evaluate
+from routerrific.expr import Var, X, evaluate
 
 
 def test_simple_str():

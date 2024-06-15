@@ -11,8 +11,8 @@ from uuid import UUID
 from django.http import HttpResponseNotFound
 from more_itertools import collapse
 
-import django_routerrific.guards as guards
-from django_routerrific.guards.parameter import ParameterGuard
+import routerrific.guards as guards
+from routerrific.guards.parameter import ParameterGuard
 
 from .expr import Expr
 
@@ -138,7 +138,7 @@ class Router:
         self.guard_registry = {}
 
         # register standard types
-        from django_routerrific.guards import header, method, path, query
+        from routerrific.guards import header, method, path, query
 
         self.register_guard(header.from_request)
         self.register_guard(method.from_request)
@@ -155,7 +155,7 @@ class Router:
         if isinstance(fn, str):
             fn_split = fn.rsplit(".", 1)
             if len(fn_split) == 1:
-                module_name = f"django_routerrific.guards.integrations.{fn}"
+                module_name = f"routerrific.guards.integrations.{fn}"
                 attr_name = "from_request"
             else:
                 module_name, attr_name = fn_split

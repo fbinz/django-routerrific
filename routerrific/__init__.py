@@ -4,7 +4,7 @@ __version__ = "0.1.0"
 
 from typing import TypeAlias
 
-from django_routerrific.guards import (
+from routerrific.guards import (
     HeaderGuard,
     MethodGuard,
     PathGuard,

@@ -12,7 +12,7 @@ pip install django-routerrific
 
 ```python
 # urls.py
-from django_routerrific import route
+from routerrific import route
 
 urlpatterns = [
     # ...

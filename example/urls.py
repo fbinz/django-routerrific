@@ -4,9 +4,9 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, re_path
 
-from django_routerrific import Router, route
-from django_routerrific.expr import X
-from django_routerrific.router import include
+from routerrific import Router, route
+from routerrific.expr import X
+from routerrific.router import include
 
 
 @route("get", "/blog/")
