@@ -363,7 +363,7 @@ def test_custom_matcher(rf):
     assert match.args == {"user": User(id="user-id-123")}
 
 
-def test_matcher_integration_variance(rf):
+def test_multiple_integrations(rf):
     class UserHeader(msgspec.Struct):
         id: str
 
@@ -371,7 +371,7 @@ def test_matcher_integration_variance(rf):
         id: str
 
     def user_guard(
-        guard: UserHeader, request: HttpRequest, context: RouteContext
+        guard: ParameterGuard[UserHeader], request: HttpRequest, context: RouteContext
     ) -> UserHeader:
         return UserHeader(id=request.headers["user"])
 
@@ -392,3 +392,36 @@ def test_matcher_integration_variance(rf):
     assert match.view is view_func
     assert match.args["user_header"] == UserHeader(id="user-id-123")
     assert match.args["user_body"] == UserBody(id="user-id-456")
+
+
+def test_integration_variance(rf):
+    class User(msgspec.Struct):
+        id: str
+
+    class Item(msgspec.Struct):
+        id: str
+
+    def from_request(
+        guard: ParameterGuard[User],
+        request: HttpRequest,
+        context: RouteContext,
+    ) -> User:
+        return User(id=request.headers["user"])
+
+    @route("post", r"/blog/")
+    def view_func(user: User, item: Item): ...
+
+    router = Router(views=[view_func], integrations=["msgspec", from_request])
+
+    request = rf.post(
+        "/blog/",
+        headers={"user": "user-id-123"},
+        data=json.dumps({"id": "item-id-456"}),
+        content_type="application/json",
+    )
+
+    match = router.match(request)
+    assert match is not None
+    assert match.view is view_func
+    assert match.args["user"] == User(id="user-id-123")
+    assert match.args["item"] == Item(id="item-id-456")
