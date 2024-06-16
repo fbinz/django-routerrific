@@ -1,6 +1,6 @@
 from typing import TypeAlias
 
-from routerrific.guards.parameter import ParameterGuard
+from routerific.guards.parameter import ParameterGuard
 
 from .header import HeaderGuard
 from .method import MethodGuard

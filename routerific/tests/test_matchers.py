@@ -8,11 +8,11 @@ import msgspec
 import pytest
 from django.http import HttpRequest
 
-from routerrific import Router, route
-from routerrific.expr import X
-from routerrific.guards import Header
-from routerrific.guards.parameter import ParameterGuard
-from routerrific.router import RouteConfigurationException, RouteContext
+from routerific import Router, route
+from routerific.expr import X
+from routerific.guards import Header
+from routerific.guards.parameter import ParameterGuard
+from routerific.router import RouteConfigurationException, RouteContext
 
 
 def test_match_path(rf):
@@ -192,7 +192,7 @@ def test_body_parameter_regular(rf):
 
     router = Router(
         views=[view_func],
-        integrations=["routerrific.guards.integrations.msgspec.from_request"],
+        integrations=["routerific.guards.integrations.msgspec.from_request"],
     )
 
     request = rf.post(

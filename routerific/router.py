@@ -11,8 +11,8 @@ from uuid import UUID
 from django.http import HttpResponseNotFound
 from more_itertools import collapse
 
-import routerrific.guards as guards
-from routerrific.guards.parameter import ParameterGuard
+import routerific.guards as guards
+from routerific.guards.parameter import ParameterGuard
 
 from .expr import Expr
 
@@ -138,7 +138,7 @@ class Router:
         self.guard_registry = {}
 
         # register standard types
-        from routerrific.guards import header, method, path, query
+        from routerific.guards import header, method, path, query
 
         self.register_guard(header.from_request)
         self.register_guard(method.from_request)
@@ -155,7 +155,7 @@ class Router:
         if isinstance(fn, str):
             fn_split = fn.rsplit(".", 1)
             if len(fn_split) == 1:
-                module_name = f"routerrific.guards.integrations.{fn}"
+                module_name = f"routerific.guards.integrations.{fn}"
                 attr_name = "from_request"
             else:
                 module_name, attr_name = fn_split
@@ -172,13 +172,13 @@ class Router:
         self.guard_registry[cls] = fn
 
     def view_guard(self, view: Callable[..., Any]) -> Iterable[ViewGuard]:
-        routerrific = getattr(view, "__routerrific__", None)
-        if routerrific is None:
+        routerific = getattr(view, "__routerific__", None)
+        if routerific is None:
             raise RouteConfigurationException(
                 "View function must be annotated with @route"
             )
 
-        for method, path in routerrific:
+        for method, path in routerific:
             path_pattern = path_to_pattern(path)
             view_guard = ViewGuard(
                 guards=self.view_guards(view, method, path),
@@ -320,10 +320,10 @@ class Router:
 
 def route(method, path: str):
     def decorator(view):
-        if not hasattr(view, "__routerrific__"):
-            setattr(view, "__routerrific__", [(method, path)])
+        if not hasattr(view, "__routerific__"):
+            setattr(view, "__routerific__", [(method, path)])
         else:
-            getattr(view, "__routerrific__").append((method, path))
+            getattr(view, "__routerific__").append((method, path))
 
         return view
 

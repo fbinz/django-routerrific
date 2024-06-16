@@ -2,7 +2,7 @@ from typing import Any
 
 from django.http import HttpRequest
 
-from routerrific import router
+from routerific import router
 
 from . import ParameterGuard
 

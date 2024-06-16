@@ -1,7 +1,7 @@
 import pytest
 
-from routerrific import Router, route
-from routerrific.router import RouteConfigurationException
+from routerific import Router, route
+from routerific.router import RouteConfigurationException
 
 
 def test_empty_router(rf):

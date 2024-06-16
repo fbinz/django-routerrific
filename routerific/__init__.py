@@ -4,7 +4,7 @@ __version__ = "0.1.0"
 
 from typing import TypeAlias
 
-from routerrific.guards import (
+from routerific.guards import (
     HeaderGuard,
     MethodGuard,
     PathGuard,

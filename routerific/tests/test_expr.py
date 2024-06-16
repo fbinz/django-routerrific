@@ -3,7 +3,7 @@ from typing import Annotated, TypeAlias
 
 import pytest
 
-from routerrific.expr import Var, X, evaluate
+from routerific.expr import Var, X, evaluate
 
 
 def test_simple_str():

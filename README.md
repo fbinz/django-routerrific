@@ -1,18 +1,18 @@
-# Django Routerrific
+# Django routerific
 
 Terrific routing for Django.
 
 ## Installation
 
 ```bash
-pip install django-routerrific
+pip install django-routerific
 ```
 
 ## Usage
 
 ```python
 # urls.py
-from routerrific import route
+from routerific import route
 
 urlpatterns = [
     # ...
