@@ -9,6 +9,8 @@ from typing import Any, Callable, Iterable
 from uuid import UUID
 
 from django.http import HttpResponseNotFound
+from django.urls import URLPattern
+from django.urls.resolvers import RegexPattern, ResolverMatch
 from more_itertools import collapse
 
 import routerific.guards as guards
@@ -35,6 +37,7 @@ def parse_str(value):
 
 DESERIALIZERS = {
     int: int,
+    float: float,
     str: parse_str,
     UUID: UUID,
     NoneType: lambda _: None,
@@ -174,9 +177,7 @@ class Router:
     def view_guard(self, view: Callable[..., Any]) -> Iterable[ViewGuard]:
         routerific = getattr(view, "__routerific__", None)
         if routerific is None:
-            raise RouteConfigurationException(
-                "View function must be annotated with @route"
-            )
+            raise RouteConfigurationException("View function must be annotated with @route")
 
         for method, path in routerific:
             path_pattern = path_to_pattern(path)
@@ -192,9 +193,7 @@ class Router:
                     if isinstance(guard, guards.PathGuard) and guard.name == name:
                         break
                 else:
-                    raise RouteConfigurationException(
-                        f"Path parameter named {name!r} not found in view function"
-                    )
+                    raise RouteConfigurationException(f"Path parameter named {name!r} not found in view function")
 
             yield view_guard
 
@@ -256,9 +255,7 @@ class Router:
             return str
         return cls
 
-    def implicitly_located_guard(
-        self, path: str, parameter: inspect.Parameter
-    ) -> guards.ParameterGuard:
+    def implicitly_located_guard(self, path: str, parameter: inspect.Parameter) -> guards.ParameterGuard:
         cls = Router.cls_or_str(parameter.annotation)
         if parameter.name in path_parameter_names(path):
             return guards.PathGuard(parameter=parameter, cls=cls)
@@ -273,9 +270,7 @@ class Router:
 
         return guards.QueryGuard(parameter=parameter, cls=cls)
 
-    def explicitly_located_guard(
-        self, parameter: inspect.Parameter
-    ) -> guards.ParameterGuard:
+    def explicitly_located_guard(self, parameter: inspect.Parameter) -> guards.ParameterGuard:
         args = typing.get_args(parameter.annotation)
         cls = parameter.annotation
         for arg in args:
@@ -296,26 +291,28 @@ class Router:
 
         return False
 
-    def parameter_guard(
-        self, *, parameter: inspect.Parameter, path: str
-    ) -> guards.ParameterGuard:
+    def parameter_guard(self, *, parameter: inspect.Parameter, path: str) -> guards.ParameterGuard:
         if guard := self.explicitly_located_guard(parameter=parameter):
             return guard
 
         return self.implicitly_located_guard(parameter=parameter, path=path)
 
-    def view_guards(
-        self, view: Callable[..., Any], method: str, path: str
-    ) -> list[guards.ParameterGuard]:
+    def view_guards(self, view: Callable[..., Any], method: str, path: str) -> list[guards.ParameterGuard]:
         signature = inspect.signature(view)
 
         return [
             guards.MethodGuard(method=method),
-            *(
-                self.parameter_guard(path=path, parameter=parameter)
-                for parameter in signature.parameters.values()
-            ),
+            *(self.parameter_guard(path=path, parameter=parameter) for parameter in signature.parameters.values()),
         ]
+
+    def typed_path(self, path: str, view: Callable[..., Any], name: str | None = None) -> URLPattern:
+        pattern = RegexPattern(path, name=name, is_endpoint=True)
+        return TypedPathPattern(pattern, view, name)
+
+
+class TypedPathPattern(URLPattern):
+    def resolve(self, path: str) -> ResolverMatch | NoneType:
+        return super().resolve(path)
 
 
 def route(method, path: str):

@@ -34,6 +34,7 @@ router = Router(
 )
 
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     re_path("^blog", router.dispatch, name="blog"),
