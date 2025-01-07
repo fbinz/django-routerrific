@@ -1,14 +1,10 @@
 """Terrific routing for Django."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
-from typing import TypeAlias
+from .router import Router
 
-from routerific.guards import (
-    HeaderGuard,
-    MethodGuard,
-    PathGuard,
-    QueryGuard,
-)
 
-from .router import Router, route
+__all__ = [
+    "Router",
+]

@@ -9,6 +9,11 @@ license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: MIT License"]
 dynamic = ["version", "description"]
 readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "django>=4.2.17",
+    "pytest-cov>=6.0.0",
+]
 
 [project.urls]
 Home = "https://github.com/fbinz/django-routerific"
@@ -17,9 +22,7 @@ Home = "https://github.com/fbinz/django-routerific"
 name = "routerific"
 
 dependencies = [
-  "msgspec",
   "django",
-  "more-itertools",
 ]
 
 
@@ -30,7 +33,6 @@ dev = [
   "flit",
   "pytest",
   "pytest-cov",
-  "pytest-django",
   "coverage",
 ]
 
@@ -48,7 +50,6 @@ exclude = ["**migrations**"]
 "__init__.py" = ["F401", "F403"]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "example.settings"
 addopts = "--cov=routerific --cov-report html"
 filterwarnings = [
   "ignore:::django:0",         # ignore all warnings that come from django
